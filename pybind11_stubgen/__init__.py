@@ -255,17 +255,28 @@ class StubsGenerator(object):
         except ModuleNotFoundError:
             return False
 
-    @staticmethod
-    def fully_qualified_name(klass):
+    @classmethod
+    def fully_qualified_name(cls, klass, dtype=None):
         module_name = klass.__module__ if hasattr(klass, '__module__') else None
         class_name = getattr(klass, "__qualname__", klass.__name__)
 
         if module_name == "builtins":
             return class_name
         else:
-            return "{module}.{klass}".format(
+            result = "{module}.{klass}".format(
                 module=module_name,
                 klass=class_name)
+
+            dtype_type = getattr(dtype, "type", None)
+
+            if dtype_type is not None:
+                dtype_name = cls.fully_qualified_name(dtype_type)
+
+                result = "{result}[{dtype_name}]".format(
+                    result=result,
+                    dtype_name=dtype_name)
+
+            return result
 
     @staticmethod
     def apply_classname_replacements(s):  # type: (str) -> Any
@@ -431,7 +442,9 @@ class AttributeStubsGenerator(StubsGenerator):
             ]
 
         value_lines = repr(self.attr).split("\n")
-        typename = self.fully_qualified_name(type(self.attr))
+
+        dtype = getattr(self.attr, "dtype", None)
+        typename = self.fully_qualified_name(type(self.attr), dtype)
 
         if len(value_lines) == 1:
             value = value_lines[0]
