@@ -548,7 +548,7 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
                 annotation = None
 
             if default_str is not None:
-                default = self.parse_value_str(default_str)
+                default = self.parse_value_str(default_str.strip())
             else:
                 default = None
 
