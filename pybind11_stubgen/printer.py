@@ -29,8 +29,9 @@ def indent_lines(lines: list[str], by=4) -> list[str]:
 
 
 class Printer:
-    def __init__(self, invalid_expr_as_ellipses: bool):
+    def __init__(self, invalid_expr_as_ellipses: bool, unknown_defaults_as_ellipses: bool):
         self.invalid_expr_as_ellipses = invalid_expr_as_ellipses
+        self.unknown_defaults_as_ellipses = unknown_defaults_as_ellipses
 
     def print_alias(self, alias: Alias) -> list[str]:
         return [f"{alias.name} = {alias.origin}"]
@@ -62,7 +63,7 @@ class Printer:
         if arg.annotation is not None:
             parts.append(f": {self.print_annotation(arg.annotation)}")
         if arg.default is not None:
-            if arg.default.is_print_safe:
+            if not self.unknown_defaults_as_ellipses or arg.default.is_print_safe:
                 parts.append(f" = {self.print_value(arg.default)}")
             else:
                 parts.append(" = ...")

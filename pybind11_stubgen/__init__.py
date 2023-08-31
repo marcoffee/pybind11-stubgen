@@ -134,6 +134,13 @@ def arg_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
+        "--print-unknown-defaults-as-is",
+        default=False,
+        action="store_true",
+        help="Suppress unknown argument default replacement with '...'",
+    )
+
+    parser.add_argument(
         "--exit-code",
         action="store_true",
         dest="exit_code",
@@ -231,7 +238,10 @@ def main():
     args = arg_parser().parse_args()
 
     parser = stub_parser_from_args(args)
-    printer = Printer(invalid_expr_as_ellipses=not args.print_invalid_expressions_as_is)
+    printer = Printer(
+        invalid_expr_as_ellipses=not args.print_invalid_expressions_as_is,
+        unknown_defaults_as_ellipses=not args.print_unknown_defaults_as_is
+    )
 
     out_dir, sub_dir = to_output_and_subdir(
         output_dir=args.output_dir,
