@@ -1,28 +1,12 @@
 from __future__ import annotations
 
 import dataclasses
-import sys
 
-from pybind11_stubgen.structs import (
-    Alias,
-    Annotation,
-    Argument,
-    Attribute,
-    Class,
-    Docstring,
-    Field,
-    Function,
-    Identifier,
-    Import,
-    InvalidExpression,
-    Method,
-    Modifier,
-    Module,
-    Property,
-    ResolvedType,
-    TypeVar_,
-    Value,
-)
+from pybind11_stubgen.structs import (Alias, Annotation, Argument, Attribute,
+                                      Class, Docstring, Field, Function,
+                                      Identifier, Import, InvalidExpression,
+                                      Method, Modifier, Module, Property,
+                                      ResolvedType, TypeVar_, Value)
 
 
 def indent_lines(lines: list[str], by=4) -> list[str]:
@@ -30,8 +14,9 @@ def indent_lines(lines: list[str], by=4) -> list[str]:
 
 
 class Printer:
-    def __init__(self, invalid_expr_as_ellipses: bool):
+    def __init__(self, invalid_expr_as_ellipses: bool, unknown_defaults_as_ellipses: bool):
         self.invalid_expr_as_ellipses = invalid_expr_as_ellipses
+        self.unknown_defaults_as_ellipses = unknown_defaults_as_ellipses
 
     def print_alias(self, alias: Alias) -> list[str]:
         return [f"{alias.name} = {alias.origin}"]
@@ -63,7 +48,7 @@ class Printer:
         if arg.annotation is not None:
             parts.append(f": {self.print_annotation(arg.annotation)}")
         if isinstance(arg.default, Value):
-            if arg.default.is_print_safe:
+            if not self.unknown_defaults_as_ellipses or arg.default.is_print_safe:
                 parts.append(f" = {self.print_value(arg.default)}")
             else:
                 parts.append(" = ...")
@@ -140,8 +125,7 @@ class Printer:
                 kw_only = True
             if not pos_only and not arg.pos_only:
                 pos_only = True
-                if sys.version_info >= (3, 8):
-                    args.append("/")
+                args.append("/")
             if not kw_only and arg.kw_only:
                 kw_only = True
                 args.append("*")
