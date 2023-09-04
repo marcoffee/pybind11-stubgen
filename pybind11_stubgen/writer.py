@@ -12,11 +12,12 @@ class Writer:
         self.stub_ext: str = stub_ext
 
     def write_module(
-        self, module: Module, printer: Printer, to: Path, sub_dir: Path | None = None
+        self, module: Module, printer: Printer, to: Path, sub_dir: Path | None = None,
+        force_init_file: bool = False
     ):
         assert to.exists()
         assert to.is_dir()
-        if module.sub_modules or sub_dir is not None:
+        if force_init_file or module.sub_modules or sub_dir is not None:
             if sub_dir is None:
                 sub_dir = Path(module.name)
             module_dir = to / sub_dir
@@ -28,4 +29,6 @@ class Writer:
             f.writelines(line + "\n" for line in printer.print_module(module))
 
         for sub_module in module.sub_modules:
-            self.write_module(sub_module, printer, to=module_dir)
+            self.write_module(
+                sub_module, printer, to=module_dir, force_init_file=force_init_file
+            )

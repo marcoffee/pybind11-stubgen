@@ -150,6 +150,13 @@ def arg_parser() -> ArgumentParser:
         "Example: `MyEnum:foo.bar.Baz`",
     )
 
+    parser.add_argument(
+        "--force-init-file",
+        default=False,
+        action="store_true",
+        help="Always generate a __init__.pyi file at the end of output hierarchy",
+    )
+
     numpy_array_fix = parser.add_mutually_exclusive_group()
     numpy_array_fix.add_argument(
         "--numpy-array-wrap-with-annotated",
@@ -332,6 +339,7 @@ def main():
         sub_dir=sub_dir,
         dry_run=args.dry_run,
         writer=Writer(stub_ext=args.stub_extension),
+        force_init_file=args.force_init_file,
     )
 
 
@@ -361,6 +369,7 @@ def run(
     sub_dir: Path | None,
     dry_run: bool,
     writer: Writer,
+    force_init_file: bool,
 ):
     module = parser.handle_module(
         QualifiedName.from_str(module_name), importlib.import_module(module_name)
@@ -374,7 +383,10 @@ def run(
         return
 
     out_dir.mkdir(exist_ok=True, parents=True)
-    writer.write_module(module, printer, to=out_dir, sub_dir=sub_dir)
+
+    writer.write_module(
+        module, printer, to=out_dir, sub_dir=sub_dir, force_init_file=force_init_file
+    )
 
 
 if __name__ == "__main__":
