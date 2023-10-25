@@ -160,6 +160,8 @@ class ParserDispatchMixin(IParser):
 
 
 class BaseParser(IParser):
+    _enum_value_regex = re.compile(r"<([^:>]*)(?:: [^>]*)?>")
+
     def handle_alias(self, path: QualifiedName, origin: Any) -> Alias | None:
         full_name = self._get_full_name(path, origin)
         if full_name is None:
@@ -374,13 +376,11 @@ class BaseParser(IParser):
 
     def handle_type(self, type_: type) -> QualifiedName:
         return QualifiedName(
-            (
                 Identifier(part)
                 for part in (
                     *type_.__module__.split("."),
                     *type_.__qualname__.split("."),
                 )
-            )
         )
 
     def parse_value_str(self, value: str) -> Value | InvalidExpression:
@@ -432,7 +432,8 @@ class BaseParser(IParser):
         return origin_name
 
     def _parse_expression_str(self, expr_str: str) -> Value | InvalidExpression:
-        strip_expr = expr_str.strip()
+        strip_expr = self._enum_value_regex.sub(r"\1", expr_str.strip())
+
         try:
             ast.parse(strip_expr)
             print_safe = False
